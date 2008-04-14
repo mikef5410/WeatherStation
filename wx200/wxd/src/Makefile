@@ -15,8 +15,8 @@ SUBDIRS = debug options buffer
 
 ifeq ($(strip $(OS)),Linux)
 CC = gcc
-LPGSQL=  -L/opt/postgres/lib -lpq -lcrypt
-IPGSQL=  -I/opt/postgres/include
+LPGSQL=  -lpq -lcrypt
+IPGSQL=  -I/usr/include/pgsql
 TESTFILE = /usr/doc/bind-4.9.3-BETA9/doc/file.lst
 #PROFILE_CFLAGS = -pg -static
 CFLAGS =  $(PROFILE_CFLAGS) -g -ansi -D_REENTRENT -Dlinux -DDEBUG_LEVEL=9
@@ -75,8 +75,8 @@ $(LOPTIONS):
 	(cd options; $(MAKE))
 
 
-Dependencies: $(SRCS) $(HDRS)
-	$(MAKEDEP) -I./ -I./options -I./debug -I./buffer -E'^/usr/' *.c >Dependencies
+#Dependencies: $(SRCS) $(HDRS)
+#	$(MAKEDEP) -I./ -I./options -I./debug -I./buffer -E'^/usr/' *.c >Dependencies
 
 depend: Dependencies
 
@@ -97,5 +97,5 @@ clean:
 
 
 
-include ./Dependencies
+#include ./Dependencies
 
