@@ -1,0 +1,322 @@
+#!/usr/bin/perl 
+#
+# $Id$
+
+use Pg;
+
+$dbmain = 'template1';
+$dbname = 'weather';
+$dbhost = "";
+
+
+@cal_fieldname = ( 'caltime', 'temp_in_mul', 'temp_in_offs',
+		    'temp_out_mul', 'temp_out_offs',
+		    'rh_in_mul',     'rh_in_offs',
+		    'rh_out_mul' ,    'rh_out_offs' ,
+		    'dp_in_mul' ,     'dp_in_offs' ,
+		    'dp_out_mul' ,    'dp_out_offs' ,
+		    'chill_mul' ,     'chill_offs' ,
+		    'rain_tot_mul' ,  'rain_tot_offs' ,
+		    'rain_rate_mul' , 'rain_rate_offs' ,
+		    'gust_spd_mul' ,  'gust_spd_offs' ,
+		    'gust_dir_mul' ,  'gust_dir_offs' ,
+		    'wavg_spd_mul' ,  'wavg_spd_offs' ,
+		    'wavg_dir_mul' ,  'wavg_dir_offs' ,
+		    'barometer_mul' , 'barometer_offs'  );
+
+
+$dbhost = get_resp("Connect to host running Postgres:",$dbhost);
+
+$conn = Pg::connectdb("dbname=$dbmain host=$dbhost");
+cmp_eq(PGRES_CONNECTION_OK, $conn->status);
+
+#$result = $conn->exec("DROP DATABASE $dbname");
+
+#$result = $conn->exec("CREATE DATABASE $dbname");
+#cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
+
+$conn = Pg::connectdb("dbname=$dbname host=$dbhost");
+if (cmp_eq(PGRES_CONNECTION_OK, $conn->status)) {
+  printf("The database $dbname already exists on host $dbhost\n");
+  $startover=get_yn("Do you wish to delete it and start over?","N");
+} else {
+  $startover=1;
+}
+
+if ($startover) {
+  $conn = Pg::connectdb("dbname=$dbmain host=$dbhost");
+  cmp_eq(PGRES_CONNECTION_OK, $conn->status);
+  
+  $result = $conn->exec("DROP DATABASE $dbname;");
+  $result = $conn->exec("CREATE DATABASE $dbname;");
+  cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);  
+  $conn = Pg::connectdb("dbname=$dbname host=$dbhost");
+  cmp_eq(PGRES_CONNECTION_OK, $conn->status);
+
+  make_wxobs;
+  make_current_obs;
+  make_cal;
+  make_location;
+}
+
+
+
+$db = $conn->db;
+cmp_eq($dbname, $db);
+
+$user = $conn->user;
+cmp_ne("", $user);
+
+$host = $conn->host;
+cmp_ne("", $host);
+
+$port = $conn->port;
+cmp_ne("", $port);
+
+load_location();
+
+if (get_yn("Enter new location values?","N")) {
+  $contact=get_resp("Contact name:",$contact);
+  $phone=get_resp("Contact phone:",$phone);
+  $email=get_resp("Contact email:",$email);
+  $lat=1*get_resp("latitude (degrees, form 37.8233 pos for N):",$lat);
+  $long=1*get_resp("longitude (degrees, form 122.95 pos for W):",$long);
+  $elev=1*get_resp("elevation (meters):",$elev);
+  $street1=get_resp("Street address #1:",$street1);
+  $street2=get_resp("Street address #2:",$street2);
+  $street3=get_resp("Street address #3:",$street3);
+  $city=get_resp("City:",$city);
+  $state=get_resp("State:",$state);
+  $country=get_resp("Country:",$country);
+  $postal=get_resp("Postal:",$postal);
+  $result = $conn->exec("DROP TABLE location;");
+  cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);  
+  make_location();
+  $sql="BEGIN; INSERT INTO location VALUES ( \'$contact\', \'$phone\', \'$email\',
+$lat, $long, $elev, \'$street1\', \'$street2\', \'$street3\', \'$city\', \'$state\',
+\'$country\', \'$postal\'); END;";
+  $result = $conn->exec($sql);
+  cmp_eq(PGRES_COMMAND_OK, $result->resultStatus); 
+}
+
+load_cal();
+make_idx();
+
+if (get_yn("Enter cal values?","N")) {
+  $cal_val[0]=pg_now();
+  for ($j=0; $j<=$#cal_fieldname; $j++) {
+    $cal_val[$j]=get_resp("$cal_fieldname[$j]: ",$cal_val[$j]);
+  }
+  $sql="BEGIN; INSERT INTO cal_fact VALUES ( ";
+  for ($j=0; $j<$#cal_fieldname; $j++) {
+    if ($j>0) {$sql = $sql . ",";}
+    if ($j==0) {
+      $sql = $sql . " \'$cal_val[$j]\'";
+    } else {
+      $sql = $sql . " $cal_val[$j]";
+    }
+  }
+  $sql = $sql . "); END;";
+#  print($sql);
+  $result = $conn->exec($sql);
+  cmp_eq(PGRES_COMMAND_OK, $result->resultStatus); 
+}
+
+
+exit;
+
+sub pg_now {
+  ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+    localtime(time);
+  $year += 1900;
+  $str=sprintf("%.2d/%.2d/%.4d %.2d:%.2d:%.2d",$mon+1,$mday,$year,$hour,$min,$sec);
+  return($str);
+}
+
+sub load_location {
+  $result=$conn->exec("SELECT * FROM location;");
+  if (cmp_eq(PGRES_TUPLES_OK, $result->resultStatus)) {
+    $tup=$result->ntuples-1;
+    $contact=getfield($tup,'contact_name');
+    $phone=getfield($tup,'contact_phone');
+    $email=getfield($tup,'contact_email');
+    $lat=getfield($tup,'latitude') + 0.0;
+    $long=getfield($tup,'longitude') + 0.0;
+    $elev=getfield($tup,'elevation') + 0.0;
+    $street1=getfield($tup,'street1');
+    $street2=getfield($tup,'street2');
+    $street3=getfield($tup,'street3');
+    $city=getfield($tup,'city');
+    $state=getfield($tup,'state');
+    $country=getfield($tup,'country');
+    $postal=getfield($tup,'postal');
+  }
+}
+
+sub load_cal {
+  $result=$conn->exec("SELECT * FROM cal_fact;");
+  if (cmp_ne(PGRES_TUPLES_OK, $result->resultStatus)) {
+    make_cal();
+    $result=$conn->exec("SELECT * FROM cal_fact;");
+  }
+  if (cmp_ne(PGRES_TUPLES_OK, $result->resultStatus))  {
+    $tup=$result->ntuples-1;
+    for ($j=0; $j<=$#cal_fieldname; $j++) {
+      $cal_val[$j]=getfield($tup,$cal_fieldname[$j]) + 0.0;
+    }
+  }
+  for ($j=1; $j<=$#cal_fieldname; $j++) {
+    $cal_val[$j] += 0.0;
+  }
+  for ($j=1; $j<=27; $j=$j+2 ) {
+    if ($cal_val[$j] == 0) { $cal_val[$j]=1.0; }
+  }
+}
+
+sub make_idx {
+    $result=$conn->exec("begin;create index obsidx on wxobs using btree (obstime); end;");
+    cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
+    cmp_eq("CREATE, END", $result->cmdStatus);
+}
+
+
+sub getfield {
+  my($tup,$fname)=@_;
+  my $field = $result->fnumber($fname);
+  return ($result->getvalue($tup,$field));
+}
+
+sub make_wxobs {
+  $result = $conn->exec("BEGIN; CREATE TABLE wxobs (
+obstime datetime,
+temp_in float4,
+temp_out float4,
+rh_in int2,
+rh_out int2,
+dp_in float4,
+dp_out float4,
+chill float4,
+rain_tot float4,
+rain_rate float4,
+gust_spd float4,
+gust_dir int2,
+wavg_spd float4,
+wavg_dir int2,
+barometer float4 ); END;");
+  cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
+  cmp_eq("CREATE, END", $result->cmdStatus);
+}
+
+sub make_current_obs {
+  $result = $conn->exec("BEGIN; CREATE TABLE current_obs (selector int2, rtot_offset float4) inherits(wxobs);END;");
+  cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
+  cmp_eq("CREATE, END", $result->cmdStatus);
+}
+
+sub make_cal {
+  $result = $conn->exec("BEGIN; CREATE TABLE cal_fact (
+caltime datetime,
+temp_in_mul float4,   temp_in_offs float4,
+temp_out_mul float4,  temp_out_offs float4,
+rh_in_mul float4,     rh_in_offs float4,
+rh_out_mul float4,    rh_out_offs float4,
+dp_in_mul float4,     dp_in_offs float4,
+dp_out_mul float4,    dp_out_offs float4,
+chill_mul float4,     chill_offs float4,
+rain_tot_mul float4,  rain_tot_offs float4,
+rain_rate_mul float4, rain_rate_offs float4,
+gust_spd_mul float4,  gust_spd_offs float4,
+gust_dir_mul float4,  gust_dir_offs float4,
+wavg_spd_mul float4,  wavg_spd_offs float4,
+wavg_dir_mul float4,  wavg_dir_offs float4,
+barometer_mul float4, barometer_offs float4 ); END; ");
+  cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
+  cmp_eq("CREATE, END", $result->cmdStatus);
+}
+
+sub make_location {
+  printf("Making the location table ...\n");
+  $result = $conn->exec("BEGIN; CREATE TABLE location (
+contact_name varchar(80),
+contact_phone varchar(80),
+contact_email varchar(80),
+latitude float4,
+longitude float4,
+elevation float4,
+street1 varchar(80),
+street2 varchar(80),
+street3 varchar(80),
+city varchar(80),
+state varchar(80),
+country varchar(80),
+postal varchar(80)
+); END;" );
+  cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
+  cmp_eq("CREATE, END", $result->cmdStatus);
+}
+
+
+sub get_resp {
+  my ($prompt, $default)=@_;
+  
+  select STDOUT; $|=1;
+  print("$prompt [$default] ");
+  $in=<>; chop;
+  $in=~s/^[\s\t]+//g;
+  $in=~s/[\s\t\n]+$//g;
+  if ($in=~/^[\s\t]*$/ ) { return($default); }
+  return($in);
+}
+
+sub get_yn {
+  my ($prompt, $default)=@_;
+  
+  select STDOUT; $|=1;
+  print("$prompt [$default] ");
+  $in=<>; chop;
+  $in=~s/^[\s\t]+//g;
+  $in=~s/[\s\t\n]+$//g;
+  if ($in=~/^[\s\t]*$/ ) { $in=$default; }
+  if ($in=~/^[\s\t]*[Yy1Tt]/) {
+    return(1);
+  } else {
+    return(0);
+  }
+}    
+
+sub cmp_eq {
+  
+  my $cmp = shift;
+  my $ret = shift;
+  my $msg;
+  my $rval;
+  
+  if ("$cmp" eq "$ret") {
+    $rval=1;
+    #	print "ok $cnt\n";
+  } else {
+    $msg = $conn->errorMessage;
+    print "error: $cmp, $ret\n$msg\n";
+    #	print "not ok $cnt: $cmp, $ret\n$msg\n";
+    #       exit;
+    $rval=0;
+  }
+  return($rval);
+}
+
+sub cmp_ne {
+  
+  my $cmp = shift;
+  my $ret = shift;
+  my $msg;
+  my $rval;
+  
+  if ("$cmp" ne "$ret") {
+    $rval=1;
+  } else {
+    $msg = $conn->errorMessage;
+    print "error: $cmp, $ret\n$msg\n";
+    $rval=0;
+  }
+  return($rval);
+}

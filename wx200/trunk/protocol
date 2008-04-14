@@ -1,0 +1,117 @@
+Path: canyon.sr.hp.com!news.dtc.hp.com!hpscit.sc.hp.com!news.cup.hp.com!hpbs1500.boi.hp.com!hp-pcd.cv.hp.com!hp-cv.cv.hp.com!reuter.cse.ogi.edu!netnews3.nwnet.net!netnews.nwnet.net!logbridge.uoregon.edu!news.maxwell.syr.edu!cam-news-hub1.bbnplanet.com!news.bbnplanet.com!prodigy.com!nntp.earthlink.net!mikeasl.NOSPAM
+From: mikeasl.NOSPAM@earthlink.net (Mike Wingstrom)
+Newsgroups: sci.geo.meteorology
+Subject: Re: RS weather station
+Date: Sun, 09 Nov 1997 20:15:30 -0600
+Organization: Adaptive Systems, Ltd.
+Lines: 100
+Message-ID: <mikeasl.NOSPAM-ya02408000R0911972015300001@news.earthlink.net>
+References: <63qt7f$san$1@gte1.gte.net>
+Reply-To: mikeasl.NOSPAM@earthlink.net
+NNTP-Posting-Host: 153.35.122.96
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+Keywords: wx200
+X-Newsreader: Yet Another NewsWatcher 2.4.0
+
+I have one and I like it. It is a good buy. The software does work but is
+mainly  aimed at selling you custom weather reports from Accuweather. It is
+Windoids only!
+
+I have hacked the interface  to the point of knowing where the currrent
+conditions are but need help on the rest.
+
+Here is what I have figured out:
+--------------------------------------------------------------
+   Protocol of RadioShack WX200 11/5/97            
+               
+Group Byte  Nibble   Bit(s)   Datum Description
+8F 1  DD all   Time  Time of Day: Seconds
+8F 2  DD all   Time  Time of Day: Minutes
+8F 3  DD all   Time  Time of Day: Hours
+8F 4  xH all   Date  Month: 1=Jan, 2=Feb, ... B=Nov, C=Dec
+8F 4  Bx 0  Time  Unit Selection: 0=12Hours, 1=24Hours
+8F 4  Bx 1  Date  Format Selection: 0=Day-Month, 1=Month-Day
+8F 5  DD all   Date  Day of Month: Day
+8F 8  DD all   Humidity Indoor Fmt=<ab> this is 'ab' in %
+8F 20 DD all   Humidity Outdoor Fmt=<ab> this is 'ab' in %
+8F 22 DD all   Time  Time of Day: Minutes
+9F 1  DD all   Temperature Indoor: Fmt=<ab.c> this is 'bc' degrees C
+9F 2  xD all   Temperature Indoor: Fmt=<ab.c> this is 'a' degrees C
+9F 15 Bx 2  Temperature Unit Selection: 0=degrees C, 1=degrees F
+9F 16 DD all   Temperature Outdoor: Fmt=<abc.d> this is 'cd' degrees C
+9F 17 xD all   Temperature Outdoor: Fmt=<abc.d> this is 'a' degrees C
+AF 1  DD all   Baro  SeaLevel: Fmt=<abcd> this is 'cd' milibars
+AF 2  DD all   Baro  SeaLevel: Fmt=<abcd.> this is 'ab' milibars
+AF 3  DD all   Baro  SeaLevel: Fmt=<abcd.e> this is 'de' milibars
+AF 4  DD all   Baro  SeaLevel: Fmt=<abcd.e> this is 'bc' milibars
+AF 5  Bx 0,1   Baro  Unit Selection: 0=inches, 1=mm, 2=mb, 3=hpa
+AF 5  xD all   Baro  SeaLevel: Fmt=<abcd.e> this is 'a' milibars
+AF 7  DD all   Dewpoint Indoor: Fmt=<ab> this is 'ab' degrees C
+AF 18 DD all   Dewpoint Outdoor: Fmt=<ab> this is 'ab' degrees C
+AF 20 DD all   Time  Time of Day: Minutes
+BF 1  DD all   Rain  Rate: Fmt=<abc> this is 'bc' mm/hr
+BF 2  xD all   Rain  Rate: Fmt=<abc> this is 'a' mm/hr
+BF 5  DD all   Rain  Total: Fmt=<abc> this is 'cd' mm
+BF 6  xD all   Rain  Total: Fmt=<abc> this is 'a' mm
+BF 7  DD all   Rain  TOD of last Total reset; Minutes
+BF 8  DD all   Rain  TOD of last Total reset; Hours
+BF 10 Bx 1  Rain  Unit Selection: 0=mm, 1=inches
+CF 1  DD all   Wind  Speed-Gust: Fmt <ab.c> this is 'bc' m/s
+CF 2  xD all   Wind  Speed-Gust: Fmt <ab.c> this is 'a' m/s
+CF 2  Dx all   Wind  Direction-Gust: Fmt=<abc> this is 'c'
+CF 3  DD all   Wind  Direction-Gust: Fmt=<abc> this is 'ab'
+CF 4  DD all   Wind  Speed-Avg: Fmt <ab.c> this is 'bc' m/s
+CF 5  xD all   Wind  Speed-Avg: Fmt <ab.c> this is 'a' m/s
+CF 5  Dx all   Wind  Direction-Avg: Fmt=<abc> this is 'c'
+CF 6  DD all   Wind  Direction-Avg: Fmt=<abc> this is 'ab'
+CF 15 Bx 2,3   Wind  Unit Selection: 0=mph, 1=knots, 2=m/s, 3=kph
+CF 16 DD all   W.Chill  Fmt=<ab> this is 'ab' degrees C
+CF 20 DD all   Humidity Outdoor: Fmt=<ab> this is 'ab' %
+CF 24 Bx 0,1,2 General  Display Selected: 0=Time,1=Temp, 2=Humi, 3=Dew,
+4=Baro, 5=Wind, 6=W.Chill, 7=Rain
+CF 24 xB 0,2   Rain  Display: 0x0->per Hour, 1x0->Memory, 1x1->Total
+CF 24 xB 2  General  Display Selected: 0=Primary, 1=Secondary
+               
+Notes:   Nibble Column:             
+   D-> 4 bit decimal number Range: 0-9          
+   H-> 4 bit hex number Range: 0-15          
+   B-> Bit encoded value Range: Variable           
+   x-> Not defined in this entry          
+               
+   Bits Column:            
+   Bits within defined Nibbles            
+   0 - Low order           
+   3 - High order          
+               
+   General           
+   All data is sent in the units shown          
+   and is independent of the units selected.          
+               
+   Checksum          
+   The last byte in each group is a checksum of that group. It is
+calculated by performing
+            
+   an unsigned add of all the bytes in the group, including the group
+number but not the 
+            
+   checksum byte. The checksum is the low-order byte of the sum.           
+-------------------------------------------
+Please send me any additions or corrections. BTW: RS and AccuWX are NOT
+releasing this info. Each says that it doesn't know what it is and tells
+you to call the other! Who needs them;-}
+
+Mike...
+______________________________________________________________________
+In article <63qt7f$san$1@gte1.gte.net>, hamrad44@mail.gte.net (Tom Stiles)
+wrote:
+
+> Has anyone had experience with the new Radio Shack weather station?
+> Is the software any good? What features does it have.  Do they give
+> any information so you can write your own software?
+> 
+> 
+> Thanks in advance,
+> 
+> Tom

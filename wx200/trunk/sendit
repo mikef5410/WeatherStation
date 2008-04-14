@@ -1,0 +1,41 @@
+#!/usr/local/bin/perl
+
+#send test data to an accuweather pc
+
+use POSIX;
+
+$tty="/dev/tty0p0";
+open(TTY,">$tty");
+$fdtty=fileno(TTY);
+$term=POSIX::Termios->new();
+die("1") if (!defined($term->setospeed(&POSIX::B9600)));
+die("3") if (!defined($term->setattr($fdtty, &POSIX::TCSANOW)));
+die("2") if (!defined($term->setoflag(~&POSIX::OPOST)));
+die("3") if (!defined($term->setattr($fdtty, &POSIX::TCSANOW)));
+die("6") if (!defined($term->setcflag(&POSIX::CLOCAL)));
+die("4") if (!defined($term->setcflag(&POSIX::CS8)));
+die("5") if (!defined($term->setcflag(~&POSIX::PARENB)));
+die("3") if (!defined($term->setattr($fdtty, &POSIX::TCSANOW)));
+select(TTY);
+$|=1;
+select(STDOUT);
+$raw=0;
+
+while (<>) {
+if (! $raw) {
+    chop;
+    s/#.*$//g;
+    s/^[ \t]*//g;
+    s/[ \t]*$//g;
+    next if (/^$/);
+    @line=split;
+    shift(@line);
+    $line=join("",@line);
+    print("$line\n");
+    $out=pack("H32","$line");
+    syswrite(TTY,$out,16);
+} else {
+    print(TTY $_);
+}
+}
+close(TTY);
