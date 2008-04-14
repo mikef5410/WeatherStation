@@ -1,0 +1,21 @@
+* Ignore white spaces between optname and separator.
+  - Fixed. There can now be any number (including zero) of spaces before and
+    after the option name, the field spearator, and the value.
+
+* Add a float type.
+  - Done.
+
+* Case insensitive booleans with stricter value checking.
+  - Done. 1, t, T, 0, f, F are all valid.
+
+* Rename Section to Module and rename Class to Configuration.
+  -Done.
+
+* Use quotes to define characters and strings.
+  -Done. Either single or double quotes may be used for both chars and
+   strings. The first character of the passed string is used as the value
+   for chars.
+
+* Remove case insensitivity for option names.
+  - Done. Actually, this was just a documentation fix. The package
+    never did this in the first place.

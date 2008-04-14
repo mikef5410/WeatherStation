@@ -1,0 +1,31 @@
+The Syntax.
+
+This is going to short and sweet. If you need more info, buy me
+some time.
+
+The input file is divided into Sections. Each section is optionally
+subdivided into Classes. Here's a sketch:
+
+optk: asdflj
+optj: asdf
+Section Foo
+   opt1: df
+ Class a
+   opt1: sadf
+   opt2: asdf
+ Class b
+   opt3: 354
+
+Section Bar
+ Class merde
+    ....
+
+
+The section preceeding the first section definition is the global defaults
+section. Values here are overriden by further section or defaults sections.
+The section between a section definition line and the first class line
+is called the defaults subsection for that section.
+
+The general rule is that more precise definitions override less precise
+ones.
+
