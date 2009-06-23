@@ -31,7 +31,7 @@ if (!$post) {
   #put buttons to get weather stats for other time periods
 
   print $q->header();   #-expires=>'now');
-  print $q->start_html("Gates Road Weather");
+  print $q->start_html(-title=>"Gates Road Weather",-style=>{'src'=>'mystyle.css'});
   print $q->center(h2("Weather Data Extract")),$q->br();
   print $q->center(h2("Custom Query:"));
   print $q->startform;
@@ -103,7 +103,7 @@ if ($post) {
     $graph_title="$y1_label from $start to $end";
     $ndata=1;
   }
-  print $q->start_html(-title=>$graph_title, -bgcolor=>"#F0F0F0");
+  print $q->start_html(-title=>$graph_title, -bgcolor=>"#F0F0F0", -style=>{'src'=>'mystyle.css'});
   interval_data($start,$end,$queries);
 
   if ($Q::outputstyle eq 'Tabular') {
@@ -270,7 +270,7 @@ sub cmp_ne {
 
 
 sub db_connect {
-$user="mikef";
+$user="wwwrun";
 
 if ($dbhost eq "") {
     $conn = Pg::connectdb("dbname=$dbname user=$user");
@@ -355,6 +355,7 @@ sub plot_data {
     print(GNUPLOTW "set y2tics\n") if ($ndata>1);
     print(GNUPLOTW "set timefmt \"%m/%d/%Y %H:%M:%S\" \n");
     print(GNUPLOTW "set key below\n");
+    #print(GNUPLOTW "set samples 500\n");
     print(GNUPLOTW "set title \"$graph_title\"\n");
     print(GNUPLOTW "set ylabel \"$y1_label $y1_unit\"\n");
     print(GNUPLOTW "set y2label \"$y2_label $y2_unit\"\n") if ($ndata>1);

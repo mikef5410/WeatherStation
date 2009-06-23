@@ -1,6 +1,4 @@
 #!/usr/bin/perl 
-#
-# $Id$
 
 use Pg;
 use CGI qw(:all);
@@ -26,7 +24,7 @@ $curobs{'selector'}=\$selector;
 #$conn = Pg::connectdb("dbname=$dbmain host=$dbhost");
 #cmp_eq(PGRES_CONNECTION_OK, $conn->status);
 
-$user="mikef";
+$user="wwwrun";
 
 if ($dbhost eq "") {
     $conn = Pg::connectdb("dbname=$dbname user=$user");

@@ -52,7 +52,8 @@ $get=1 if (! $post);
 $curobs{'rtot_offset'}=\$rtot_offset;
 $curobs{'selector'}=\$selector;
 
-$user="mikef";
+#$user="mikef";
+$user="wwwrun";
 
 if ($dbhost eq "") {
     $conn = Pg::connectdb("dbname=$dbname user=$user");
@@ -82,7 +83,7 @@ $resuly=$conn->exec("SET SQL_Inheritance TO OFF;");
 #$result=$conn->exec("set enable_seqscan=off;");
 
 print header;
-print start_html("Gates Road Weather");
+print start_html(-title=>"Gates Road Weather",-style=>{'src'=>'xmystyle.css'});
 print<<"EoF";
 <center><h2>Weather at Mike\'s House</h2></center>
 <br>
