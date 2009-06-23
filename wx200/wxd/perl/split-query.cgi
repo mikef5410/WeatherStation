@@ -147,7 +147,7 @@ print end_html;
 exit;
 
 sub do_current {
-  #load_location();
+  load_location();
   load_curobs();
   
   $rain=$rain_tot + $rtot_offset;
@@ -180,6 +180,8 @@ sub do_current {
   temp_extreme($today,"today");
   gust($today,"today");
   rain_stats($today,"today");
+
+  printf("<p><a href=\"http://forecast.weather.gov/MapClick.php?lat=%g&lon=%g&site=mtr&smap=1&marine=0&unit=0&lg=en\"><b>Get the current forecast for this location</b></a></p>\n",$lat,-1.0 * $long);
 
 }
 
