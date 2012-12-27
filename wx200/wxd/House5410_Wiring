@@ -1,0 +1,18 @@
+12/26/2012
+
+
+RS232 from Weather station (now LaCrosse 23xx)
+connects from Kitchen to mrf-gw port /dev/ttyS1.
+
+DB9M Kitchen | Wire Color Kitchen | Flat white wire Office |  DB9F MrfGW
+-------------|--------------------|------------------------|------------
+2 RX         |  ORG               |  BLK                   |  2 
+-------------|--------------------|------------------------|------------
+3 TX         |  WHT-ORG           |  GRN                   |  3
+-------------|--------------------|------------------------|------------
+4 DTR        |  BLU               |  YEL                   |  4
+-------------|--------------------|------------------------|------------
+7 RTS        |  WHT-BLU           |  RED                   |  7
+-------------|--------------------|------------------------|------------
+
+Note no signal ground is connected between the two! Hard to believe it works.

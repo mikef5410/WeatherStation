@@ -3,7 +3,7 @@
 # CGI-bin to query the wxd weather database for interval stats
 # Mike Ferrara  28 Mar 1998
 #
-# $Id$
+# $Id: interval-query.cgi 1022 2007-02-27 20:12:44Z mikef $
 
 
 use Pg;
@@ -350,7 +350,9 @@ sub plot_data {
     $pid=open2('GNUPLOTR','GNUPLOTW',"$gnuplot");
     print(GNUPLOTW "set grid\n");
     print(GNUPLOTW "set nokey\n");
-    print(GNUPLOTW "set data style lines\n");
+    print(GNUPLOTW "set style data lines\n");
+#    print(GNUPLOTW "set style data filledcurves x1\n");
+#    print(GNUPLOTW "set style fill pattern 2");
     print(GNUPLOTW "set xdata time\n");
     print(GNUPLOTW "set y2tics\n") if ($ndata>1);
     print(GNUPLOTW "set timefmt \"%m/%d/%Y %H:%M:%S\" \n");

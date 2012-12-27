@@ -1,0 +1,48 @@
+# $Id: mystyle.css 10385 2008-05-06 19:29:28Z mikef $
+
+a.info{
+    position:relative; /*this is the key*/
+    z-index:24; 
+    color:#000;
+    text-decoration:none}
+
+a.info:hover{z-index:25; background-color:#ff0}
+
+a.info span{display: none; padding:2px 3px; margin-left:-20em; margin-top:1em; width:20em;}
+
+a.info:hover span{ /*the span will display just on :hover state*/
+    display:inline;
+    position:absolute;
+    border:2px solid #336600;
+    background-color:#99cc66; color:#000;
+    opacity: 0.88;
+    text-align: center}
+
+BODY, TABLE, TH, TD, H1, H2, H3, H4, P, PRE, STRONG, EM, B, I {font-family: sans-serif; }
+BODY { background-color: white;}
+P {color:#000000; }
+TH {background: black; color: white; font-size: 120% }
+H2 {background: #B0B0B0; }
+IMG {border-style: none; }
+TD { text-align: center; font-size: 110%; border-style: solid; border-width: thin; border-color: #000;  }
+TABLE { border-style: solid; border-width: thin; border-color: #000; }
+
+div.code {
+   display:block;
+   top: 2em; left: 2em; right: 2em; 
+   border: 1px solid #555;
+   background-color:#c0c0e0; color:#000;
+   white-space: pre;
+}
+
+div.warn {
+   display:block;
+   top: 2em; left: 2em; right: 2em; 
+   border: 1px solid #555;
+   background-color:#e0a0a0; color:#000;
+   white-space: pre;
+}
+
+div.head {
+    font-size: 120%
+}

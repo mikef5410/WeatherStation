@@ -3,7 +3,7 @@
 # CGI-bin to query the wxd weather database for pertinent stats
 # Mike Ferrara  28 Mar 1998
 #
-# $Id$
+# $Id: split-query.cgi 1170 2009-06-23 23:32:10Z mikef $
 
 use Pg;
 use CGI qw(:all);
