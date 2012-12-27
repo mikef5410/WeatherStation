@@ -1,0 +1,62 @@
+#!/usr/bin/perl
+#
+use Date::Parse;
+use DBI;
+my $dbh=DBI->connect("dbi:Pg:dbname=weather","","",{AutoCommit=>1});
+
+my $sth=$dbh->prepare("SELECT rain_tot FROM wxobs ORDER BY obstime DESC LIMIT 1;");
+$sth->execute();
+my @row=$sth->fetchrow_array();
+my $lastRain=$row[0];
+
+
+my $inssth=$dbh->prepare("INSERT INTO wxobs(obstime,temp_in,temp_out,rh_in,rh_out,dp_out,chill,rain_tot,rain_rate,wavg_spd,wavg_dir,barometer) VALUES(?,?,?,?,?,?,?,?,?,?,?,?);");
+
+my $rainOffs=-1;
+my $tstampLast=0;
+my $dt=0;
+while(<>) {
+    chomp;
+    s/\#.*$//;
+    s/\s*^//;
+    s/^\s*//;
+    next if (/^\s*$/);
+    my($ts,$date,$time,$tempIn,$tempOut,$Dew,$rhIn,$rhOut,$windS,$windD,$windDtxt,$windChill,$raintot,$rel_press)=split(" ");
+
+    $windD = int($windD);
+
+    $date=~s/Jan/01/;
+    $date=~s/Feb/02/;
+    $date=~s/Mar/03/;
+    $date=~s/Apr/04/;
+    $date=~s/May/05/;
+    $date=~s/Jun/06/;
+    $date=~s/Jul/07/;
+    $date=~s/Aug/08/;
+    $date=~s/Sep/09/;
+    $date=~s/Oct/10/;
+    $date=~s/Nov/11/;
+    $date=~s/Dec/12/;
+
+    $tstamp=str2time($date . " " .$time);
+    if ($rainOffs == -1) {
+	$rainOffs=$lastRain - $raintot;
+    }
+    
+    $raintot += $rainOffs;
+
+    if ($tstampLast) {
+	$dt=$tstamp - $tstampLast;
+	$dr=$raintot -$lastRain;
+	$rainrate=3600 * $dr/$dt;
+    }
+    $tstampLast=$tstamp;
+    $lastRain=$raintot;
+
+
+
+    print($tstamp," $date $time $windD $raintot $rainrate\n");
+#    $inssth->execute("$date $time",$tempIn,$tempOut,$rhIn,$rhOut,$Dew,$windChill,
+#		     $raintot,$rainrate,$windS,$windD,$rel_press);
+
+}
