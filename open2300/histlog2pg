@@ -56,7 +56,7 @@ while(<>) {
 
 
     print($tstamp," $date $time $windD $raintot $rainrate\n");
-#    $inssth->execute("$date $time",$tempIn,$tempOut,$rhIn,$rhOut,$Dew,$windChill,
-#		     $raintot,$rainrate,$windS,$windD,$rel_press);
+    $inssth->execute("$date $time",$tempIn,$tempOut,$rhIn,$rhOut,$Dew,$windChill,
+		     $raintot,$rainrate,$windS,$windD,$rel_press);
 
 }

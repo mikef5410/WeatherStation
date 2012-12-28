@@ -12,6 +12,32 @@
 #include "rw2300.h"
 
 /********************************************************************/
+/* sensor_status
+ * Return whether connected to outdoor sensors or not
+ *
+ * Input: Handle  to weatherstation
+ *
+ * Returns: 1 if ok, 0 if not
+ *******************************************************************/
+int sensor_status(WEATHERSTATION ws2300)
+{
+  unsigned char data[20];
+  unsigned char command[25];	//room for write data also
+  int address=0x54c;
+  int bytes=1;
+
+  // Connection Type: 0D=Cable, 3D=lost, FD=Wireless
+  if (read_safe(ws2300, address, bytes, data, command) != bytes)
+    read_error_exit();
+
+  if (data[0] == 0x3D) {
+    return(0);
+  }
+
+  return(1);
+}
+
+/********************************************************************/
 /* temperature_indoor
  * Read indoor temperature, current temperature only
  * 

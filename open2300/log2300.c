@@ -76,6 +76,13 @@ int main(int argc, char *argv[])
 		print_usage();
 	}
 
+	if (sensor_status(ws2300)) {
+	    printf("Sensors ok\n");
+	  } else {
+	    printf("Sensors disconnected\n");
+	  }
+
+
 	fileptr = fopen(argv[1], "a+");
 	if (fileptr == NULL)
 	{

@@ -97,6 +97,7 @@ struct timestamp
 
 
 /* Weather data functions */
+int sensor_status(WEATHERSTATION ws2300);
 
 double temperature_indoor(WEATHERSTATION ws2300, int temperature_conv);
 
