@@ -43,7 +43,7 @@ $get=1 if (! $post);
 %wxobs = ('obstime', \$obstime,  'temp_in', \$temp_in, 
 	  'temp_out', \$temp_out,  'rh_in',  \$rh_in,
 	  'rh_out',  \$rh_out,    'dp_in', \$dp_in,
-	  'dp_out', \$dp_in,      'chill', \$chill,
+	  'dp_out', \$dp_out,      'chill', \$chill,
 	  'rain_tot', \$rain_tot, 'rain_rate', \$rain_rate,
 	  'gust_spd', \$gust_spd, 'gust_dir', \$gust_dir,
 	  'wavg_spd', \$wavg_spd, 'wavg_dir', \$wavg_dir,
@@ -347,7 +347,7 @@ sub load_location {
 }
 
 sub load_curobs {
-  $result=$conn->exec("SELECT * FROM current_obs WHERE selector = 1;");
+  $result=$conn->exec("SELECT * FROM current_obs limit 1;");
   if (cmp_eq(PGRES_TUPLES_OK, $result->resultStatus)) {
     $tup=$result->ntuples-1;
     foreach $fname (keys(%curobs)) {
