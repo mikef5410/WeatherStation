@@ -155,8 +155,8 @@ int get_curwx(WEATHERSTATION ws)
         //so we calculate it here
         curtime=time(NULL);
         
-        rain_tot=rain_total(ws,MILLIMETERS);
-        correct(rain_tot, current_cal.rain_tot_mul, current_cal.rain_tot_offs);
+        rain_tot=rain_total(ws,MILLIMETERS); //raw rain total from weather station
+        correct(rain_tot, current_cal.rain_tot_mul, current_cal.rain_tot_offs); //corrected for cal factor
 
         if (rain_tot < current_obs.rain_tot) { //wx station reset?
             current_obs.rtot_offset += current_obs.rain_tot;
@@ -164,8 +164,8 @@ int get_curwx(WEATHERSTATION ws)
 
         rain_rate = 0.0;
         if (lasttime) {
-            time_t dt = curtime - lasttime;
-            double dr = rain_tot - current_obs.rain_tot;
+            time_t dt = curtime - lasttime; // delta-t in seconds
+            double dr = rain_tot - current_obs.rain_tot; //millimeters
             if ((dr>0) && (dt>0)) {
                 rain_rate =  3600.0 * dr / (double)dt;
             }
