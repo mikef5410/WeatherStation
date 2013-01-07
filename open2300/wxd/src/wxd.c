@@ -165,8 +165,8 @@ int get_curwx(WEATHERSTATION ws)
         rain_rate = 0.0;
         if (lasttime) {
             time_t dt = curtime - lasttime;
-            double dr = current_obs.rain_tot - rain_tot;
-            if (dr && dt) {
+            double dr = rain_tot - current_obs.rain_tot;
+            if ((dr>0) && (dt>0)) {
                 rain_rate =  3600.0 * dr / (double)dt;
             }
         }
