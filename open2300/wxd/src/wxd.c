@@ -119,34 +119,48 @@ int get_curwx(WEATHERSTATION ws)
     time_t curtime = 0;
     static time_t lasttime = 0;
     struct tm *thetime;
-    
+    int outdoor_good = 1;
 
     if (sensor_status(ws)) {
-        //indoor temperature
-        temp_in = temperature_indoor(ws,CELCIUS);
-        correct(temp_in,current_cal.temp_in_mul, current_cal.temp_in_offs);
-        update(current_obs.temp_in, temp_in, TEMPIN);
+        outdoor_good=1;
 
         //outdoor temperature
         temp_out=temperature_outdoor(ws,CELCIUS);
         correct(temp_out, current_cal.temp_out_mul, current_cal.temp_out_offs);
-        update(current_obs.temp_out, temp_out, TEMPOUT);
+        if ((temp_out > 60.0) || (temp_out < -45.5)) {
+          outdoor_good = 0;
+        } else {
+          update(current_obs.temp_out, temp_out, TEMPOUT);
+        }
+        
+        //indoor temperature
+        temp_in = temperature_indoor(ws,CELCIUS);
+        correct(temp_in,current_cal.temp_in_mul, current_cal.temp_in_offs);
+        if ((temp_in <= 60.0) && (temp_in >= -45.5)) {
+        update(current_obs.temp_in, temp_in, TEMPIN);
+        }
 
         //outdoor dewpoint
         dewpt_out=dewpoint(ws,CELCIUS);
         correct(dewpt_out, current_cal.dp_out_mul, current_cal.dp_out_offs);
-        update(current_obs.dp_out, dewpt_out, DEWOUT);
+        if (outdoor_good && (dewpt_out <= 60.0) && (dewpt_out >= -45.5)) {
+          update(current_obs.dp_out, dewpt_out, DEWOUT);
+        }
 
         //outdoor relative humidity, percent
         rh_out = humidity_outdoor(ws);
         correct(rh_out, current_cal.rh_out_mul, current_cal.rh_out_offs);
-        update(current_obs.rh_out, rh_out, HUMOUT);
+        if (outdoor_good && (rh_out >= 0.0) && (rh_out <= 150.0))  {
+          update(current_obs.rh_out, rh_out, HUMOUT);
+        }
 
         //indoor relative humidity, percent
         rh_in = humidity_indoor(ws);
         correct(rh_in, current_cal.rh_in_mul, current_cal.rh_in_offs);
-        update(current_obs.rh_in, rh_in, HUMIN);
-
+        if ((rh_in >= 0.0) && (rh_in <= 150.0))  {
+          update(current_obs.rh_in, rh_in, HUMIN);
+        }
+        
         //indoor dewpoint is calculated here. Lacrosse doesn't report it
         dewpt_in=log(rh_in/100.0) + 17.67 *  (temp_in / (243.5 + temp_in)); //wikipedia "dew point"
         update(current_obs.dp_in, dewpt_in, DEWIN);
@@ -158,23 +172,25 @@ int get_curwx(WEATHERSTATION ws)
         rain_tot=rain_total(ws,MILLIMETERS); //raw rain total from weather station
         correct(rain_tot, current_cal.rain_tot_mul, current_cal.rain_tot_offs); //corrected for cal factor
 
-        if (rain_tot < current_obs.rain_tot) { //wx station reset?
+        if (outdoor_good) {
+          if (rain_tot < current_obs.rain_tot) { //wx station reset?
             current_obs.rtot_offset += current_obs.rain_tot;
-        }
+          }
 
-        rain_rate = 0.0;
-        if (lasttime) {
+          rain_rate = 0.0;
+          if (lasttime) {
             time_t dt = curtime - lasttime; // delta-t in seconds
             double dr = rain_tot - current_obs.rain_tot; //millimeters
             if ((dr>0) && (dt>0)) {
-                rain_rate =  3600.0 * dr / (double)dt;
+              rain_rate =  3600.0 * dr / (double)dt;
             }
+          }
+          lasttime=curtime;
+
+          update(current_obs.rain_rate,rain_rate,RAINRATE);
+          update(current_obs.rain_tot, rain_tot, RAINTOT);
         }
-        lasttime=curtime;
-
-        update(current_obs.rain_rate,rain_rate,RAINRATE);
-        update(current_obs.rain_tot, rain_tot, RAINTOT);
-
+        
         thetime=localtime(&curtime);
         current_obs.sec = thetime->tm_sec;
         current_obs.min = thetime->tm_min;
@@ -185,40 +201,42 @@ int get_curwx(WEATHERSTATION ws)
         // Wind chill outside
         chill=windchill(ws,CELCIUS);
         correct(chill, current_cal.chill_mul, current_cal.chill_offs);
-        update(current_obs.chill, chill, WCHILL);
+        if (outdoor_good) {
+          update(current_obs.chill, chill, WCHILL);
+        }
 
-        //Wind. 
-        wavg = wind_current(ws,METERS_PER_SECOND,&wavg_dir);
+        //Wind.
+        if (outdoor_good) {
+          wavg = wind_current(ws,METERS_PER_SECOND,&wavg_dir);
 
-        correct(wavg, current_cal.wavg_spd_mul, current_cal.wavg_spd_offs);
-        correct(wavg_dir, current_cal.wavg_dir_mul, current_cal.wavg_dir_offs);
+          correct(wavg, current_cal.wavg_spd_mul, current_cal.wavg_spd_offs);
+          correct(wavg_dir, current_cal.wavg_dir_mul, current_cal.wavg_dir_offs);
 
-        iwavg_dir = lround(wavg_dir);
-        iwavg_dir = (iwavg_dir < 0) ? 360 + ((int) iwavg_dir % 360) : (int) iwavg_dir % 360;
+          iwavg_dir = lround(wavg_dir);
+          iwavg_dir = (iwavg_dir < 0) ? 360 + ((int) iwavg_dir % 360) : (int) iwavg_dir % 360;
 
-        //use max wind as gust
-        gust = wind_minmax(ws,METERS_PER_SECOND,NULL,NULL,NULL,NULL);
-        wind_reset(ws,RESET_MIN|RESET_MAX);
+          //use max wind as gust
+          gust = wind_minmax(ws,METERS_PER_SECOND,NULL,NULL,NULL,NULL);
+          wind_reset(ws,RESET_MIN|RESET_MAX);
         
-        correct(gust, current_cal.gust_spd_mul, current_cal.gust_spd_offs);
+          correct(gust, current_cal.gust_spd_mul, current_cal.gust_spd_offs);
         
-        gust_dir = iwavg_dir;
+          gust_dir = iwavg_dir;
 
-        update(current_obs.gust, gust, GUST);
-        update(current_obs.wavg, wavg, WAVG);
-        update(current_obs.gust_dir, gust_dir, GUSTDIR);
-        update(current_obs.wavg_dir, iwavg_dir, WAVGDIR);
-
+          update(current_obs.gust, gust, GUST);
+          update(current_obs.wavg, wavg, WAVG);
+          update(current_obs.gust_dir, gust_dir, GUSTDIR);
+          update(current_obs.wavg_dir, iwavg_dir, WAVGDIR);
+        }
+        
         barometer = rel_pressure(ws,MILLIBARS);
         correct(barometer, current_cal.barometer_mul, current_cal.barometer_offs);
         update(current_obs.barometer, barometer, BARO);
 
         
-    } else {
+    } else { // sensors ok
         return(0);
     }
-    
-
 
 
     return(1);
