@@ -28,6 +28,8 @@ void do_opts(int argc, char **argv);
 
 int foreground = 0;
 char *myName;
+static double rravg = 0.0;
+static double K = 2/(1+7); //7 point EMA
 
 main(int argc, char **argv)
 {
@@ -121,8 +123,6 @@ int get_curwx(WEATHERSTATION ws)
     struct tm *thetime;
     int outdoor_good = 1;
 
-    static double rravg = 0.0;
-    static double K = 2/(1+9); //9 point EMA
     
     if (sensor_status(ws)) {
         outdoor_good=1;
@@ -190,12 +190,10 @@ int get_curwx(WEATHERSTATION ws)
           }
           lasttime=curtime;
 
-          //9 point exponential moving average.
+          //7 point exponential moving average.
           rravg = (K * (rain_rate - rravg)) + rravg;
 
-          //Threshold
-          if (rravg <= 0.01) rravg=0.0;
-          
+          //update(current_obs.rain_rate,(rravg<=1e-4)?0.0:rravg,RAINRATE);
           update(current_obs.rain_rate,rravg,RAINRATE);
           update(current_obs.rain_tot, rain_tot, RAINTOT);
         }
