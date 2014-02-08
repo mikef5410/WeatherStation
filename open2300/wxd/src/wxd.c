@@ -187,10 +187,12 @@ int get_curwx(WEATHERSTATION ws)
 	  double dr = rain_tot - current_obs.rain_tot; //millimeters
           update(current_obs.rain_tot, rain_tot, RAINTOT);
 
-	  if  (dt>0 && dr>0) {
+	  if  ((dt>0 && dr>0)||(dt>=300)) {
 	    rain_rate =  3600.0 * dr / (double)dt;
+	    rain_rate = (rain_rate<1.0E-4)?0.0:rain_rate;
 	    // exponential moving average.
 	    rravg = (K * (rain_rate - rravg)) + rravg;
+	    rravg = (rravg < 0.0) ? 0.0 : rravg;
 	    //update(current_obs.rain_rate,(rravg<=1e-4)?0.0:rravg,RAINRATE);
 	    update(current_obs.rain_rate, rravg, RAINRATE);
 	    lastrain=curtime;
