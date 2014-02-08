@@ -187,7 +187,7 @@ int get_curwx(WEATHERSTATION ws)
 	  double dr = rain_tot - current_obs.rain_tot; //millimeters
           update(current_obs.rain_tot, rain_tot, RAINTOT);
 
-	  if  ((dt>0 && dr>0)||(dt>=300)) {
+	  if  ((dt>0 && dr>0)||(dt>=600)) {
 	    rain_rate =  3600.0 * dr / (double)dt;
 	    rain_rate = (rain_rate<1.0E-4)?0.0:rain_rate;
 	    // exponential moving average.
