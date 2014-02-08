@@ -28,8 +28,6 @@ void do_opts(int argc, char **argv);
 
 int foreground = 0;
 char *myName;
-static double rravg = 0.0;
-static double K = 2/(1+7); //7 point EMA
 
 main(int argc, char **argv)
 {
@@ -119,9 +117,13 @@ int get_curwx(WEATHERSTATION ws)
         rain_rate, rain_tot, gust, wavg, wavg_dir, barometer;
     int gust_dir,iwavg_dir;
     time_t curtime = 0;
-    static time_t lasttime = 0;
     struct tm *thetime;
     int outdoor_good = 1;
+
+    static time_t lastrain = 0;
+    static double rravg = 0.0;
+    static double K = 2.0f/(1.0f+9.0f); //9 point EMA
+
 
     
     if (sensor_status(ws)) {
@@ -171,6 +173,7 @@ int get_curwx(WEATHERSTATION ws)
         //Rain ... instantaneous rain rate isn't reported by Lacrosse
         //so we calculate it here
         curtime=time(NULL);
+	if ( lastrain == 0 ) lastrain=curtime;
         
         rain_tot=rain_total(ws,MILLIMETERS); //raw rain total from weather station
         correct(rain_tot, current_cal.rain_tot_mul, current_cal.rain_tot_offs); //corrected for cal factor
@@ -180,22 +183,18 @@ int get_curwx(WEATHERSTATION ws)
             current_obs.rtot_offset += current_obs.rain_tot;
           }
 
-          rain_rate = 0.0;
-          if (lasttime) {
-            time_t dt = curtime - lasttime; // delta-t in seconds
-            double dr = rain_tot - current_obs.rain_tot; //millimeters
-            if ((dr>0) && (dt>0)) {
-              rain_rate =  3600.0 * dr / (double)dt;
-            }
-          }
-          lasttime=curtime;
-
-          //7 point exponential moving average.
-          rravg = (K * (rain_rate - rravg)) + rravg;
-
-          //update(current_obs.rain_rate,(rravg<=1e-4)?0.0:rravg,RAINRATE);
-          update(current_obs.rain_rate,rravg,RAINRATE);
+	  time_t dt = curtime - lastrain; // delta-t in seconds
+	  double dr = rain_tot - current_obs.rain_tot; //millimeters
           update(current_obs.rain_tot, rain_tot, RAINTOT);
+
+	  if  (dt>0 && dr>0) {
+	    rain_rate =  3600.0 * dr / (double)dt;
+	    // exponential moving average.
+	    rravg = (K * (rain_rate - rravg)) + rravg;
+	    //update(current_obs.rain_rate,(rravg<=1e-4)?0.0:rravg,RAINRATE);
+	    update(current_obs.rain_rate, rravg, RAINRATE);
+	    lastrain=curtime;
+	  }
         }
         
         thetime=localtime(&curtime);
