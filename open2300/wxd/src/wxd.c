@@ -190,11 +190,11 @@ int get_curwx(WEATHERSTATION ws)
 	  //Do we have rain? Or did 10min expire so we can average in zero rain rate?
 	  if  ((dt>0 && dr>1.0E-5)||(dt>=600)) {
 	    rain_rate =  3600.0 * dr / (double)dt;
-	    rain_rate = (rain_rate<1.0E-4) ? 0.0 : rain_rate;
+	    rain_rate = (rain_rate<1.0E-3) ? 0.0 : rain_rate; //Less than 1micron/hr?
 	    // exponential moving average.
 	    rravg = (K * (rain_rate - rravg)) + rravg;
-	    rravg = (rravg < 0.0) ? 0.0 : rravg;
-	    update(current_obs.rain_rate, (rravg<=1.0E-4 ? 0.0 : rravg), RAINRATE);
+	    rravg = (rravg < 1.0E-2) ? 0.0 : rravg;
+	    update(current_obs.rain_rate,  0.0 , RAINRATE);
 	    lastrain=curtime;
 	  }
         }
