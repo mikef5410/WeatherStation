@@ -3,11 +3,22 @@
 # wxd This shell script takes care of starting and stopping
 #               the wxd weather daemon.
 #
+# /etc/init.d/wxd
 
 # Source function library.
-. /etc/rc.d/init.d/functions
+#. /etc/rc.d/init.d/functions
+
+### BEGIN INIT INFO
+# Provides:       wxd
+# Required-Start: postgresql
+# Required-Stop:
+# Default-Start:  3 5
+# Default-Stop:
+# Description:    Start the wxd daemon
+### END INIT INFO
 
 WXDUSER=mikef
+#sleep 20
 
 # See how we were called.
 case "$1" in
@@ -16,7 +27,7 @@ case "$1" in
         echo -n "Starting wxd Weather daemon:"
         if [ -z "`pidofproc wxd`" ]
         then
-                su $WXDUSER -c "/usr/local/sbin/wxd"
+                su $WXDUSER -c "/usr/local/sbin/wxdrun"
                 echo -n " wxd"
         else
                 echo -n " (already running)"
@@ -27,7 +38,8 @@ case "$1" in
   stop)
         # Stop daemons.
         echo -n "Shutting down wxd Weather daemon: "
-        killall -TERM wxd 2>/dev/null
+	killall -9 wxdrun 2>/dev/null
+        killall -9 wxd 2>/dev/null
         echo
         rm -f /var/lock/subsys/wxd
         ;;

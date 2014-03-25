@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+
+#until /usr/local/sbin/wxd; do
+#   logger "wxd died with exit code $?. Respawning..."
+#   sleep 5
+#done
+
+
+function checkRunning
+{
+    while (/bin/true) ; do
+	pid=$(ps -ef | grep wxd | grep -v wxdrun | grep -v grep | awk '{print $2}')
+	if [ -z "${pid}" ]; then
+	    logger "wxd died. restarting ..."
+	    /usr/local/sbin/wxd
+	fi
+	sleep 20
+    done
+}
+
+/usr/local/sbin/wxd
+checkRunning &
