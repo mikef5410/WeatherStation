@@ -83,7 +83,11 @@ $resuly=$conn->exec("SET SQL_Inheritance TO OFF;");
 #$result=$conn->exec("set enable_seqscan=off;");
 
 print header;
-print start_html(-title=>"Gates Road Weather",-style=>{'src'=>'xmystyle.css'});
+
+print start_html(-title=>"Gates Road Weather",-style=>{'src'=>'xmystyle.css'},
+      -head=>meta({-name=>"viewport",-content=>"width=device-width","-user-scalable"=>"yes"}));
+
+
 print<<"EoF";
 <center><h2>Weather at Mike\'s House</h2></center>
 <br>

@@ -31,7 +31,10 @@ if (!$post) {
   #put buttons to get weather stats for other time periods
 
   print $q->header();   #-expires=>'now');
-  print $q->start_html(-title=>"Gates Road Weather",-style=>{'src'=>'mystyle.css'});
+
+  print $q->start_html(-title=>"Gates Road Weather",-style=>{'src'=>'mystyle.css'},
+      -head=>meta({-name=>"viewport",-content=>"width=device-width","-user-scalable"=>"yes"}));
+
   print $q->center(h2("Weather Data Extract")),$q->br();
   print $q->center(h2("Custom Query:"));
   print $q->startform;
