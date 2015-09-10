@@ -55,7 +55,7 @@ db_getval(int tuple, char *fname)
    char *rval;
 
    rval = PQgetvalue(dbres, tuple, PQfnumber(dbres, fname));
-   fprintf(stderr,"db_getval: %d: %s = %s\n",tuple,fname,rval);
+//   fprintf(stderr,"db_getval: %d: %s = %s\n",tuple,fname,rval);
    return (rval);
 }
 
@@ -247,7 +247,7 @@ write_obs(void)
 
    TRACE("write_obs\n");
    db_curtime(datime);
-   rain = current_obs.rain_tot + current_obs.rtot_offset;
+   rain = current_obs.rain_tot;
    sprintf(sql_str, "BEGIN; INSERT INTO wxobs VALUES ('%s',%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%d,%.3f,%d,%.3f); END;",
 	   datime,
 	   current_obs.temp_in, current_obs.temp_out,

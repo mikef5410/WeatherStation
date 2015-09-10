@@ -32,7 +32,8 @@ char *myName;
 main(int argc, char **argv)
 {
    WEATHERSTATION ws2300;
-   
+
+   int status = -1;
    int go = 1;
    struct config_type config;
 
@@ -72,7 +73,17 @@ main(int argc, char **argv)
 
       do_opts(argc, argv);       // do command line option processing, they override config file opts 
       if (!foreground) {
-	 daemonize(); //safely daemonize myself
+        status = fork();
+        switch (status) {
+        case -1:
+          perror("fork()");
+          exit(1);
+        case 0:			/* child */
+          break;
+        default:			/*parent */
+          exit(0);
+        }
+//	 daemonize(); //safely daemonize myself
       }
 
 
@@ -175,9 +186,10 @@ int get_curwx(WEATHERSTATION ws)
         curtime=time(NULL);
 	if ( lastrain == 0 ) lastrain=curtime;
         
-        rain_tot=rain_total(ws,MILLIMETERS); //raw rain total from weather station
+        rain_tot=rain_total(ws,MILLIMETERS); //raw rain total from weather station 
         correct(rain_tot, current_cal.rain_tot_mul, current_cal.rain_tot_offs); //corrected for cal factor
-
+        rain_tot += current_obs.rtot_offset;
+        
         if (outdoor_good) {
           if (rain_tot < current_obs.rain_tot) { //wx station reset?
             current_obs.rtot_offset += current_obs.rain_tot;
@@ -383,7 +395,7 @@ screen_writer(void)
    while (write_screen) {
       if (ch_flag != 0) {
 	 if (test_bit(ch_flag, RAINTOT)) {
-	    rain = current_obs.rain_tot + current_obs.rtot_offset;
+           rain = current_obs.rain_tot;
 	    errlog1(8, "Rain total: %d mm", rain);
 	    clear_bit(ch_flag, RAINTOT);
 	 }

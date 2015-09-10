@@ -38,6 +38,7 @@ MYSQLHISTLOGOBJ = mysqlhistlog2300.o rw2300.o linux2300.o win2300.o
 VERSION = 1.11
 
 CFLAGS = -Wall -O3 -DVERSION=\"$(VERSION)\"
+#CFLAGS = -Wall -g -DVERSION=\"$(VERSION)\"
 CC_LDFLAGS = -lm
 CC_WINFLAG = 
 # For Windows - comment the two line above and un-comment the two lines below.
@@ -80,7 +81,7 @@ xml2300 : $(XMLOBJ)
 	$(CC) $(CFLAGS) -o $@ $(XMLOBJ) $(CC_LDFLAGS) $(CC_WINFLAG)
 
 mysql2300:
-	$(CC) $(CFLAGS) -o mysql2300 mysql2300.c rw2300.c linux2300.c $(CC_LDFLAGS) $(CC_WINFLAG) -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient
+	$(CC) $(CFLAGS) -o mysql2300 mysql2300.c rw2300.c linux2300.c $(CC_LDFLAGS) $(CC_WINFLAG) -I/usr/include/mysql -L/usr/lib/mysql -L/usr/lib64/mysql -lmysqlclient
 
 pgsql2300: $(PGSQLOBJ)
 	$(CC) $(CFLAGS) -o $@ $(PGSQLOBJ) $(CC_LDFLAGS) $(CC_WINFLAG) -I/usr/include/pgsql -L/usr/lib/pgsql -lpq
@@ -95,7 +96,7 @@ minmax2300: $(MINMAXOBJ)
 	$(CC) $(CFLAGS) -o $@ $(MINMAXOBJ) $(CC_LDFLAGS) $(CC_WINFLAG)
 	
 mysqlhistlog2300 :
-	$(CC) $(CFLAGS) -o mysqlhistlog2300 mysqlhistlog2300.c rw2300.c linux2300.c $(CC_LDFLAGS) $(CC_WINFLAG) -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient
+	$(CC) $(CFLAGS) -o mysqlhistlog2300 mysqlhistlog2300.c rw2300.c linux2300.c $(CC_LDFLAGS) $(CC_WINFLAG) -I/usr/include/mysql -L/usr/lib/mysql -L/usr/lib64/mysql -lmysqlclient
 
 
 install:
