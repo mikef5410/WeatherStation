@@ -98,7 +98,7 @@ if ($get) {
   #put buttons to get weather stats for other time periods
   print center(h3("Custom Query:"));
   print "Extract weather data for period: <BR>";
-  print startform('POST',"interval-query.cgi");
+  print start_form('POST',"interval-query.cgi");
   print "<TABLE><TR>";
   print "<TD>From:</TD>";
   print "<TD>",popup_menu(-name=>'start_month',-labels=>\%mon,-values=>[1,2,3,4,5,6,7,8,9,10,11,12],-default=>$mon);
@@ -122,13 +122,13 @@ if ($get) {
   print radio_group(-name=>'outputstyle',-values=>['Tabular','Graph'],-default=>'graph',-linebreak=>'true');
   print "<BR>";
   print submit(-name => 'Go');
-  print endform;
+  print end_form;
 
   print("<HR width=55% size=4>");
   print "<center>";
-  print startform('POST', $iam);
+  print start_form('POST', $iam);
   print submit(-name => 'Stats for this month');
-  print endform;
+  print end_form;
   print "</center>";
 }
 
@@ -154,7 +154,7 @@ sub do_current {
   load_location();
   load_curobs();
   
-  $rain=$rain_tot + $rtot_offset;
+  $rain=$rain_tot;
   if ($mon > 5) {
     $season="06/01/$year 00:00";
   } else {
@@ -206,7 +206,7 @@ sub rain_stats {
     $tup=$result->ntuples-1;
     $start_rain=getfield(0,'rain_tot');
   }
-  $today_rain = ($rain + $offset) - $start_rain;
+  $today_rain = ($rain) - $start_rain;
   
   $q="SELECT obstime,rain_rate FROM wxobs where (obstime >= \'$today\' AND obstime <= \'$now\') AND
        rain_rate = (SELECT max(rain_rate) FROM wxobs where (obstime >= \'$today\' AND obstime <= \'$now\'));";
