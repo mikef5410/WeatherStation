@@ -191,7 +191,7 @@ int get_curwx(WEATHERSTATION ws)
         rain_tot += current_obs.rtot_offset;
         
         if (outdoor_good) {
-          if (rain_tot < current_obs.rain_tot) { //wx station reset?
+          if (current_obs.rain_tot - rain_tot)>=1.0 { //wx station reset? (rain_tot < current_obs.rain_tot)
             current_obs.rtot_offset += current_obs.rain_tot;
           }
 

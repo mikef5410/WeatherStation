@@ -18,7 +18,7 @@
          ;; Where do we run gdb, cscope and make from?
          (builddir (concat top "/open2300"))
          ;; Source dirs setup. They show up in ecb's browser in the listed order
-         (sdirs (list "" "buffer" "cbuf" "debug" "options" "open2300" "open2300/wxd/src" ;; top dir
+         (sdirs (list "" "/buffer" "/cbuf" "/debug" "/options" "/open2300" "/open2300/wxd/src" ;; top dir
                       ))
          (dirlist (mapcar (lambda(sdir) (concat top sdir)) sdirs) )
          (cvar (list 'ecb-source-path (list 'quote dirlist) ))
